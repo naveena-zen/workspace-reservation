@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WorkSpace Booking</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; }
+
+    header {
+      background: #1a56db;
+      color: #fff;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: 0.5px; }
+    header span { font-size: 1.6rem; }
+
+    nav { background: #fff; display: flex; border-bottom: 2px solid #e2e8f0; }
+    nav button {
+      flex: 1; padding: 14px; border: none; background: none;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer; color: #64748b;
+      transition: all 0.2s;
+    }
+    nav button.active { color: #1a56db; border-bottom: 3px solid #1a56db; background: #eff6ff; }
+    nav button:hover:not(.active) { background: #f8fafc; }
+
+    .tab { display: none; padding: 24px; max-width: 960px; margin: 0 auto; }
+    .tab.active { display: block; }
+
+    /* Spaces */
+    .cards { display: flex; flex-wrap: wrap; gap: 16px; }
+    .card {
+      background: #fff; border-radius: 10px; padding: 18px;
+      flex: 1 1 260px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      border: 1px solid #e2e8f0;
+    }
+    .card h3 { font-size: 1rem; margin-bottom: 6px; }
+    .badge {
+      display: inline-block; padding: 2px 10px; border-radius: 99px;
+      font-size: 0.75rem; font-weight: 600; margin-bottom: 8px;
+    }
+    .badge.hot-desk { background: #dbeafe; color: #1d4ed8; }
+    .badge.meeting-room { background: #d1fae5; color: #065f46; }
+    .badge.private-booth { background: #ede9fe; color: #5b21b6; }
+    .card p { font-size: 0.85rem; color: #64748b; margin-bottom: 4px; }
+    .card .price { font-size: 1rem; font-weight: 700; color: #1a56db; margin: 8px 0; }
+    .card button {
+      width: 100%; padding: 9px; background: #1a56db; color: #fff;
+      border: none; border-radius: 7px; font-weight: 600; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .card button:hover { background: #1e40af; }
+
+    /* Form */
+    form { background: #fff; padding: 24px; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); max-width: 520px; }
+    form h2 { margin-bottom: 18px; font-size: 1.1rem; color: #1a56db; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; color: #374151; }
+    select, input {
+      width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1;
+      border-radius: 7px; font-size: 0.9rem; margin-bottom: 14px;
+      outline: none; transition: border 0.2s;
+    }
+    select:focus, input:focus { border-color: #1a56db; }
+    form .row { display: flex; gap: 12px; }
+    form .row > div { flex: 1; }
+    form button[type=submit] {
+      width: 100%; padding: 11px; background: #1a56db; color: #fff;
+      border: none; border-radius: 7px; font-weight: 700; font-size: 1rem;
+      cursor: pointer; transition: background 0.2s;
+    }
+    form button[type=submit]:hover { background: #1e40af; }
+
+    .alert {
+      padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;
+      font-size: 0.9rem; font-weight: 500;
+    }
+    .alert.success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .alert.error   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+    /* My Bookings */
+    .search-row { display: flex; gap: 10px; margin-bottom: 20px; max-width: 440px; }
+    .search-row input { margin-bottom: 0; }
+    .search-row button {
+      padding: 9px 20px; background: #1a56db; color: #fff;
+      border: none; border-radius: 7px; font-weight: 600; cursor: pointer;
+      white-space: nowrap;
+    }
+    .search-row button:hover { background: #1e40af; }
+
+    .booking-card {
+      background: #fff; border-radius: 10px; padding: 16px 18px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .booking-card h4 { font-size: 0.95rem; margin-bottom: 4px; }
+    .booking-card p { font-size: 0.82rem; color: #64748b; }
+    .booking-card .status {
+      font-size: 0.75rem; font-weight: 700; padding: 2px 10px;
+      border-radius: 99px; margin-top: 6px; display: inline-block;
+    }
+    .status.confirmed { background: #d1fae5; color: #065f46; }
+    .status.cancelled { background: #fee2e2; color: #991b1b; }
+    .cancel-btn {
+      padding: 7px 14px; background: #fee2e2; color: #991b1b;
+      border: 1px solid #fca5a5; border-radius: 7px; font-weight: 600;
+      cursor: pointer; font-size: 0.82rem; flex-shrink: 0;
+    }
+    .cancel-btn:hover { background: #fecaca; }
+    .empty { color: #94a3b8; text-align: center; padding: 30px 0; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <span>🏢</span>
+  <h1>WorkSpace Booking</h1>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('spaces', this)">🪑 Spaces</button>
+  <button onclick="showTab('book', this)">📅 Book a Space</button>
+  <button onclick="showTab('mybookings', this)">📋 My Bookings</button>
+</nav>
+
+<!-- SPACES TAB -->
+<div id="tab-spaces" class="tab active">
+  <div class="cards" id="spaces-list"><p class="empty">Loading spaces…</p></div>
+</div>
+
+<!-- BOOK TAB -->
+<div id="tab-book" class="tab">
+  <form id="book-form">
+    <h2>📅 Book a Space</h2>
+    <div id="book-msg"></div>
+    <label>Select Space</label>
+    <select id="f-space" required></select>
+    <label>Date</label>
+    <input type="date" id="f-date" required />
+    <div class="row">
+      <div><label>Start Time</label><input type="time" id="f-start" required /></div>
+      <div><label>End Time</label><input type="time" id="f-end" required /></div>
+    </div>
+    <label>Your Name</label>
+    <input type="text" id="f-name" placeholder="John Doe" required />
+    <label>Email</label>
+    <input type="email" id="f-email" placeholder="john@example.com" required />
+    <button type="submit">Confirm Booking</button>
+  </form>
+</div>
+
+<!-- MY BOOKINGS TAB -->
+<div id="tab-mybookings" class="tab">
+  <div class="search-row">
+    <input type="email" id="search-email" placeholder="Enter your email…" />
+    <button onclick="loadBookings()">Search</button>
+  </div>
+  <div id="bookings-list"></div>
+</div>
+
+<script>
+  let allSpaces = [];
+
+  // Tab switching
+  function showTab(id, btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // Load spaces
+  async function loadSpaces() {
+    const res = await fetch('/api/spaces');
+    allSpaces = await res.json();
+    renderSpaces();
+    populateSelect();
+  }
+
+  function renderSpaces() {
+    const el = document.getElementById('spaces-list');
+    el.innerHTML = allSpaces.map(s => `
+      <div class="card">
+        <h3>${s.name}</h3>
+        <span class="badge ${s.type}">${s.type}</span>
+        <p>👥 Capacity: ${s.capacity}</p>
+        <p>🛠 ${s.amenities.join(', ')}</p>
+        <div class="price">$${s.pricePerHour}/hr</div>
+        <button onclick="goBook('${s._id}')">Book Now</button>
+      </div>`).join('');
+  }
+
+  function populateSelect() {
+    const sel = document.getElementById('f-space');
+    sel.innerHTML = allSpaces.map(s =>
+      `<option value="${s._id}" data-name="${s.name}">${s.name} ($${s.pricePerHour}/hr)</option>`
+    ).join('');
+  }
+
+  function goBook(id) {
+    const btn = document.querySelector(`nav button:nth-child(2)`);
+    showTab('book', btn);
+    document.getElementById('f-space').value = id;
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('f-date').value = today;
+  }
+
+  // Book form submit
+  document.getElementById('book-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const msgEl = document.getElementById('book-msg');
+    msgEl.innerHTML = '';
+    const sel = document.getElementById('f-space');
+    const spaceName = sel.options[sel.selectedIndex].dataset.name;
+    const body = {
+      spaceId: sel.value, spaceName,
+      userName: document.getElementById('f-name').value,
+      userEmail: document.getElementById('f-email').value,
+      date: document.getElementById('f-date').value,
+      startTime: document.getElementById('f-start').value,
+      endTime: document.getElementById('f-end').value
+    };
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Booking failed');
+      msgEl.innerHTML = `<div class="alert success">✅ Booking Confirmed!<br><strong>${spaceName}</strong> on ${body.date} from ${body.startTime} to ${body.endTime}</div>`;
+      e.target.reset();
+      populateSelect();
+    } catch (err) {
+      msgEl.innerHTML = `<div class="alert error">❌ ${err.message}</div>`;
+    }
+  });
+
+  // My Bookings
+  async function loadBookings() {
+    const email = document.getElementById('search-email').value.trim();
+    if (!email) return;
+    const res = await fetch(`/api/bookings?email=${encodeURIComponent(email)}`);
+    const bookings = await res.json();
+    const el = document.getElementById('bookings-list');
+    if (!bookings.length) { el.innerHTML = '<p class="empty">No bookings found.</p>'; return; }
+    el.innerHTML = bookings.map(b => `
+      <div class="booking-card">
+        <div>
+          <h4>${b.spaceName}</h4>
+          <p>📅 ${b.date} | 🕐 ${b.startTime} – ${b.endTime}</p>
+          <p>👤 ${b.userName}</p>
+          <span class="status ${b.status}">${b.status}</span>
+        </div>
+        ${b.status === 'confirmed'
+          ? `<button class="cancel-btn" onclick="cancelBooking('${b._id}')">Cancel</button>`
+          : ''}
+      </div>`).join('');
+  }
+
+  async function cancelBooking(id) {
+    if (!confirm('Cancel this booking?')) return;
+    await fetch(`/api/bookings/${id}`, { method: 'DELETE' });
+    loadBookings();
+  }
+
+  loadSpaces();
+</script>
+</body>
+</html>
